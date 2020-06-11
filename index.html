@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>前航 - 前端导航网站</title>
+    <style type="text/css">
+      .icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.15em;
+        fill: currentColor;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="globalHeader">
+      <form class="searchForm" method="get" action="https://www.baidu.com/s">
+        <input name="wd" type="text" />
+        <button type="submit">搜索</button>
+      </form>
+    </header>
+
+    <main class="globalMain">
+      <ul class="siteList">
+        <li class="last">
+          <div class="addButton">
+            <div class="icon-wrapper">
+              <svg class="icon">
+                <use xlink:href="#icon-add_1"></use>
+              </svg>
+            </div>
+            <div class="text">新增网站</div>
+          </div>
+        </li>
+      </ul>
+    </main>
+
+    <script src="//at.alicdn.com/t/font_1875003_ma1b8kpp6sr.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+  </body>
+</html>
+<script>
+  const $siteList = $(".siteList");
+  const $lastLi = $siteList.find("li.last");
+  const x = localStorage.getItem("x");
+  const xObject = JSON.parse(x);
+  const hashMap = xObject || [
+    { logo: "A", url: "https://www.acfun.cn" },
+    { logo: "B", url: "https://www.bilibili.com" },
+  ];
+  // 简化显示的url
+  const simplifyUrl = (url) => {
+    return url
+      .replace("https://", "")
+      .replace("http://", "")
+      .replace("www.", "")
+      .replace(/\/.*/, ""); // 删除 / 开头的内容
+  };
+
+  const render = () => {
+    $siteList.find("li:not(.last)").remove();
+    hashMap.forEach((node, index) => {
+      const $li = $(`<li>
+      <div class="site">
+        <div class="logo">${node.logo}</div>
+        <div class="link">${simplifyUrl(node.url)}</div>
+        <div class="close">
+          <svg class="icon">
+            <use xlink:href="#icon-close"></use>
+          </svg>
+        </div>
+      </div>
+    </li>`).insertBefore($lastLi);
+      $li.on("click", () => {
+        window.open(node.url);
+      });
+      $li.on("click", ".close", (e) => {
+        e.stopPropagation(); // 阻止冒泡
+        hashMap.splice(index, 1);
+        render();
+      });
+    });
+  };
+
+  render();
+
+  $(".addButton").on("click", () => {
+    let url = window.prompt("请问你要添加的网址是啥？");
+    if (url.indexOf("http") !== 0) {
+      url = "https://" + url;
+    }
+    console.log(url);
+    hashMap.push({
+      // 使显示的图标文字变成网站真实的首字母
+      logo: simplifyUrl(url)[0].toUpperCase(),
+      url: url,
+    });
+    render();
+  });
+
+  window.onbeforeunload = () => {
+    const string = JSON.stringify(hashMap);
+    localStorage.setItem("x", string);
+  };
+
+  $(document).on("keypress", (e) => {
+    const { key } = e;
+    for (let i = 0; i < hashMap.length; i++) {
+      if (hashMap[i].logo.toLowerCase() === key) {
+        window.open(hashMap[i].url);
+      }
+    }
+  });
+</script>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  *:before,
+  *:after {
+    box-sizing: border-box;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  ul,
+  ol {
+    list-style: none;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  /* style */
+  body {
+    background: #eee;
+  }
+  .globalHeader {
+    margin: 20px;
+  }
+  @media (min-width: 500px) {
+    .globalHeader {
+      margin: 60px 0 100px;
+    }
+  }
+  .searchForm {
+    display: flex;
+    justify-content: space-between;
+  }
+  @media (min-width: 500px) {
+    .searchForm {
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  .searchForm > input {
+    width: 100%;
+    margin-right: 10px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  .searchForm > button {
+    white-space: nowrap;
+    padding: 0 28px;
+    border: none;
+    border-radius: 4px;
+    background: #0282b9;
+    color: white;
+    font-size: 16px;
+  }
+  .globalMain {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .siteList {
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  @media (min-width: 500px) {
+    .siteList {
+      margin-left: 0;
+      margin-right: -25px;
+      justify-content: flex-start;
+    }
+  }
+  .siteList > li {
+    margin-bottom: 10px;
+  }
+  @media (min-width: 500px) {
+    .siteList > li {
+      margin-right: 25px;
+    }
+  }
+  .siteList .site {
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px 0;
+    position: relative;
+    cursor: pointer;
+  }
+  .siteList .site > .logo {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 64px;
+    text-transform: uppercase;
+  }
+  .siteList .site > .link {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .siteList .site > .close {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    display: none;
+    cursor: default;
+  }
+  .siteList .site:hover > .close {
+    display: block;
+  }
+  .siteList .addButton {
+    border: 1px solid #ddd;
+    background: white;
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px 0;
+  }
+  .siteList .addButton .icon {
+    width: 56px;
+    height: 56px;
+  }
+  .siteList .addButton .text {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .siteList .addButton .icon-wrapper {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
